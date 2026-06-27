@@ -1,3 +1,15 @@
+global struct PilotState {
+    string primary // one of pilotWeapons
+    string offhand // one of pilotOrdnances
+}
+global struct TitanState {
+    string primary
+    // TODO: offensive, defensive and tactical abilities
+}
+
+global table<entity, PilotState> pilotStates;
+global table<entity, TitanState> titanStates;
+
 global const int TITAN_OFFENSIVE = 0;
 global const int TITAN_DEFENSIVE = 1;
 global const int TITAN_TACTICAL  = 2;
@@ -44,7 +56,7 @@ global array<string> pilotWeapons = [
 
 ]
 
-global array<string> grenades = [
+global array<string> pilotOrdnances = [
     "mp_weapon_frag_grenade",
     "mp_weapon_thermite_grenade",
     "mp_weapon_grenade_gravity",
@@ -54,4 +66,14 @@ global array<string> grenades = [
     // these two are kinda broken
     //"mp_weapon_grenade_sonar",
     //"mp_weapon_satchel",
+];
+
+global array<string> titanWeapons = [
+    "mp_titanweapon_xo16_shorty",
+    "mp_titanweapon_sticky_40mm",
+    "mp_titanweapon_rocketeer_rocketstream",
+    "mp_titanweapon_meteor",
+    "mp_titanweapon_particle_accelerator",
+    "mp_titanweapon_leadwall",
+    "mp_titanweapon_predator_cannon",
 ];

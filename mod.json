@@ -12,6 +12,10 @@
          "RunOn": "SERVER || CLIENT"
       },
       {
+         "Path": "utils.nut",
+         "RunOn":"SERVER"
+      },
+      {
          "Path": "server.nut",
          "RunOn": "SERVER",
          "ServerCallback": {

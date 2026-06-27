@@ -1,60 +1,29 @@
 global function ServerStart
 
-struct PilotState {
-    string primary // one of pilotWeapons
-    string offhand // one of grenades
-}
-
-table<entity, PilotState> pilotStates;
-
-void function GiveRandomWeapon( entity player ) {
-    if ( !IsValid( player ) || player.IsTitan() ) return;
-    print( "GiveRandomWeapon() called" );
-
-    foreach ( entity weapon in player.GetMainWeapons() )
-        player.TakeWeaponNow( weapon.GetWeaponClassName() )
-
-    string chosenWeapon;
-    do {
-        chosenWeapon = pilotWeapons[ RandomInt( pilotWeapons.len() ) ];
-    } while ( chosenWeapon == pilotStates[player].primary );
-
-    pilotStates[player].primary = chosenWeapon;
-    player.GiveWeapon( pilotStates[player].primary );
-    player.SetActiveWeaponByName( pilotStates[player].primary );
-}
-
-void function GiveRandomGrenade( entity player ) {
-    if ( !IsValid( player ) || player.IsTitan() ) return;
-
-    if ( IsValid( player.GetOffhandWeapon(PILOT_ORDNANCE) ) )
-        player.TakeWeaponNow( player.GetOffhandWeapon(PILOT_ORDNANCE).GetWeaponClassName() );
-
-    string chosenOrd;
-    do {
-        chosenOrd = grenades[ RandomInt( grenades.len() ) ];
-    } while ( chosenOrd == pilotStates[player].offhand );
-
-    pilotStates[player].offhand = chosenOrd;
-    player.GiveOffhandWeapon( chosenOrd, 0, [] );
+void function EnsureWeapon( entity ent, string expected ) {
+    array<entity> mainWpns = ent.GetMainWeapons();
+    if ( mainWpns.len() != 1 || mainWpns[0].GetWeaponClassName() != expected ) {
+        bool alreadyHave = false;
+        foreach ( entity weapon in ent.GetMainWeapons() ) {
+            if ( weapon.GetWeaponClassName() == expected ) {
+                alreadyHave = true;
+                continue;
+            }
+            ent.TakeWeaponNow( weapon.GetWeaponClassName() )
+        }
+        if ( !alreadyHave ) ent.GiveWeapon( expected );
+        ent.SetActiveWeaponByName( expected );
+    }
 }
 
 void function UpdatePilot( entity player ) {
     if ( !IsValid( player ) || !player.IsEntAlive() ) return;
-
-    array<entity> mainWpns = player.GetMainWeapons();
-    if ( mainWpns.len() != 1 || mainWpns[0].GetWeaponClassName() != pilotStates[player].primary ) {
-        bool alreadyHave = false;
-        foreach ( entity weapon in player.GetMainWeapons() ) {
-            if ( weapon.GetWeaponClassName() == pilotStates[player].primary ) {
-                alreadyHave = true;
-                continue;
-            }
-            player.TakeWeaponNow( weapon.GetWeaponClassName() )
-        }
-        if ( !alreadyHave ) player.GiveWeapon( pilotStates[player].primary );
-        player.SetActiveWeaponByName( pilotStates[player].primary );
+    if (!(player in pilotStates)) {
+        pilotStates[player] <- RandPilotLoadout();
     }
+
+    EnsureWeapon( player, pilotStates[player].primary );
+
     entity offhandWpn = player.GetOffhandWeapon(PILOT_ORDNANCE);
     if ( IsValid( offhandWpn ) ) {
         if ( offhandWpn.GetWeaponClassName() != pilotStates[player].offhand || player.GetWeaponAmmoLoaded(offhandWpn) == 0 ) {
@@ -63,11 +32,15 @@ void function UpdatePilot( entity player ) {
         }
     }
 
-    mainWpns[0].SetWeaponPrimaryAmmoCount(mainWpns[0].GetWeaponPrimaryClipCountMax());
+    entity wpn = player.GetMainWeapons()[0];
+    wpn.SetWeaponPrimaryAmmoCount(wpn.GetWeaponPrimaryClipCountMax());
 }
 
 void function UpdateTitan( entity BT ) {
-    // TODO
+    if (!(BT in titanStates)) {
+        titanStates[BT] <- RandTitanLoadout();
+    }
+    EnsureWeapon( BT, titanStates[BT].primary );
 }
 
 void function Loop( entity player ) {
@@ -84,11 +57,6 @@ void function Loop( entity player ) {
 void function InitLoop( entity player ) {
     if ( !player.IsPlayer() || !IsValid( player ) ) return;
 
-    PilotState randomLoadout;
-    randomLoadout.primary = pilotWeapons[ RandomInt( pilotWeapons.len() ) ];
-    randomLoadout.offhand = grenades[ RandomInt( grenades.len() ) ];
-    pilotStates[player] <- randomLoadout;
-
     thread Loop( player );
 }
 
@@ -100,7 +68,7 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
         printt("DAMAGE TYPE", dmgType);
         
         if ( player.IsTitan() ){
-            // TODO
+            GiveRandomTitanLoadout( player );
         } else {
             bool isGranade = dmgType == 32;
             if ( pilotStates[player].offhand == "mp_weapon_thermite_grenade" && dmgType == 96 ) {
@@ -110,9 +78,9 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
             }
 
             if (isGranade)
-                GiveRandomGrenade( player );
+                GiveRandomPilotGrenade( player );
             else
-                GiveRandomWeapon( player );
+                GiveRandomPilotWeapon( player );
         }
     }
 }
@@ -122,7 +90,7 @@ void function PrecacheEverything() {
     foreach ( string id in pilotWeapons )
         if (!WeaponIsPrecached(id))
             PrecacheWeapon(id);
-    foreach ( string id in grenades )
+    foreach ( string id in pilotOrdnances )
         if (!WeaponIsPrecached(id))
             PrecacheWeapon(id);
 }
@@ -134,7 +102,7 @@ void function ServerStart() {
 
     AddCallback_OnNPCKilled( OnNPCKilled );
     AddCallback_OnPlayerRespawned( InitLoop );
-    //foreach (ord in grenades) {
+    //foreach (ord in pilotOrdnances) {
     //    AddSpawnCallback(ord, OnGrenadeThrown);
     //}
 }
