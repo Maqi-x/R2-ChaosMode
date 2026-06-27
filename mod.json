@@ -1,0 +1,30 @@
+{
+   "Name": "Maqix.ChaosMode",
+   "Description": "Woo yeah wooo!",
+   "Version": "0.1.0",
+
+   "LoadPriority": 0,
+   "ConVars": [],
+   "ConCommands": [],
+   "Scripts": [
+      {
+         "Path": "defs.nut",
+         "RunOn": "SERVER || CLIENT"
+      },
+      {
+         "Path": "server.nut",
+         "RunOn": "SERVER",
+         "ServerCallback": {
+            "Before": "ServerStart"
+         }
+      },
+      {
+         "Path": "client.nut",
+         "RunOn": "CLIENT",
+         "ServerCallback": {
+            "Before": "ClientStart"
+         }
+      }
+   ],
+   "Localisation": []
+}
