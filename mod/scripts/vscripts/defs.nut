@@ -1,3 +1,10 @@
+global const int TITAN_OFFENSIVE = 0;
+global const int TITAN_DEFENSIVE = 1;
+global const int TITAN_TACTICAL  = 2;
+global const int TITAN_CORE      = 3;
+global const int PILOT_ORDNANCE = 0;
+global const int PILOT_ABILITY  = 1;
+
 global array<string> pilotWeapons = [
     // ar
     "mp_weapon_rspn101",

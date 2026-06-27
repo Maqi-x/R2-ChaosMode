@@ -27,8 +27,8 @@ void function GiveRandomWeapon( entity player ) {
 void function GiveRandomGrenade( entity player ) {
     if ( !IsValid( player ) || player.IsTitan() ) return;
 
-    if ( IsValid( player.GetOffhandWeapon(0) ) )
-        player.TakeWeaponNow( player.GetOffhandWeapon(0).GetWeaponClassName() );
+    if ( IsValid( player.GetOffhandWeapon(PILOT_ORDNANCE) ) )
+        player.TakeWeaponNow( player.GetOffhandWeapon(PILOT_ORDNANCE).GetWeaponClassName() );
 
     string chosenOrd;
     do {
@@ -40,6 +40,8 @@ void function GiveRandomGrenade( entity player ) {
 }
 
 void function UpdatePilot( entity player ) {
+    if ( !IsValid( player ) || !player.IsEntAlive() ) return;
+
     array<entity> mainWpns = player.GetMainWeapons();
     if ( mainWpns.len() != 1 || mainWpns[0].GetWeaponClassName() != pilotStates[player].primary ) {
         bool alreadyHave = false;
@@ -53,13 +55,15 @@ void function UpdatePilot( entity player ) {
         if ( !alreadyHave ) player.GiveWeapon( pilotStates[player].primary );
         player.SetActiveWeaponByName( pilotStates[player].primary );
     }
-    entity offhandWpn = player.GetOffhandWeapon(0);
+    entity offhandWpn = player.GetOffhandWeapon(PILOT_ORDNANCE);
     if ( IsValid( offhandWpn ) ) {
         if ( offhandWpn.GetWeaponClassName() != pilotStates[player].offhand || player.GetWeaponAmmoLoaded(offhandWpn) == 0 ) {
-            player.TakeOffhandWeapon(0);
-            player.GiveOffhandWeapon( pilotStates[player].offhand, 0, [] );
+            player.TakeOffhandWeapon(PILOT_ORDNANCE);
+            player.GiveOffhandWeapon( pilotStates[player].offhand, PILOT_ORDNANCE, [] );
         }
     }
+
+    mainWpns[0].SetWeaponPrimaryAmmoCount(mainWpns[0].GetWeaponPrimaryClipCountMax());
 }
 
 void function UpdateTitan( entity BT ) {
