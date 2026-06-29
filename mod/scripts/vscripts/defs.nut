@@ -1,6 +1,9 @@
 global struct PilotState {
     string primary // one of pilotWeapons
     string offhand // one of pilotOrdnances
+    string melee
+    string ability
+    bool abilityActive
 }
 global struct TitanState {
     string primary
@@ -14,15 +17,17 @@ global const int TITAN_OFFENSIVE = 0;
 global const int TITAN_DEFENSIVE = 1;
 global const int TITAN_TACTICAL  = 2;
 global const int TITAN_CORE      = 3;
+
 global const int PILOT_ORDNANCE = 0;
 global const int PILOT_ABILITY  = 1;
+global const int PILOT_MELEE    = 5;
 
 global array<string> pilotWeapons = [
     // ar
     "mp_weapon_rspn101",
     "mp_weapon_vinson",
     "mp_weapon_g2",
-    "mp_weapon_hemlok",
+    //"mp_weapon_hemlok", // idk why, but it crashes the game
     // smg
     "mp_weapon_r97",
     "mp_weapon_car",
@@ -53,7 +58,6 @@ global array<string> pilotWeapons = [
     "mp_weapon_shotgun_pistol",
     "mp_weapon_semipistol",
     "mp_weapon_autopistol",
-
 ]
 
 global array<string> pilotOrdnances = [
@@ -62,10 +66,24 @@ global array<string> pilotOrdnances = [
     "mp_weapon_grenade_gravity",
     "mp_weapon_grenade_emp",
     "mp_weapon_grenade_electric_smoke",
-    
+
     // these two are kinda broken
     //"mp_weapon_grenade_sonar",
     //"mp_weapon_satchel",
+];
+
+global array<string> pilotAbilities = [
+    "mp_ability_cloak",
+    "mp_ability_heal",
+    //"mp_ability_grapple",
+    "mp_ability_shifter",
+    //"mp_ability_holopilot",
+];
+
+global array<string> pilotMelees = [
+    "melee_pilot_arena",
+    "melee_pilot_emptyhanded",
+    "melee_pilot_sword",
 ];
 
 global array<string> titanWeapons = [

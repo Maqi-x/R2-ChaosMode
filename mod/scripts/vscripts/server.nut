@@ -16,6 +16,22 @@ void function EnsureWeapon( entity ent, string expected ) {
     }
 }
 
+void function UpdatePilotAbility( entity player ) {
+    entity actualAbility = player.GetOffhandWeapon(PILOT_ABILITY);
+    if ( !IsValid( actualAbility ) || actualAbility.GetWeaponClassName() != pilotStates[player].ability) {
+        player.TakeOffhandWeapon(PILOT_ABILITY);
+        player.GiveOffhandWeapon( pilotStates[player].ability, PILOT_ABILITY, [] );
+    }
+
+    bool isActive = !player.GetOffhandWeapon(PILOT_ABILITY).IsReadyToFire();
+    bool wasActive = pilotStates[player].abilityActive;
+
+    if (wasActive && !isActive) {
+        GiveRandomPilotAbility( player );
+    }
+    pilotStates[player].abilityActive = isActive;
+}
+
 void function UpdatePilot( entity player ) {
     if ( !IsValid( player ) || !player.IsEntAlive() ) return;
     if (!(player in pilotStates)) {
@@ -34,6 +50,8 @@ void function UpdatePilot( entity player ) {
 
     entity wpn = player.GetMainWeapons()[0];
     wpn.SetWeaponPrimaryAmmoCount(wpn.GetWeaponPrimaryClipCountMax());
+
+    UpdatePilotAbility( player );
 }
 
 void function UpdateTitan( entity BT ) {
@@ -56,6 +74,7 @@ void function Loop( entity player ) {
 
 void function InitLoop( entity player ) {
     if ( !player.IsPlayer() || !IsValid( player ) ) return;
+    if ( player in pilotStates ) return; // to prevent spawning multiple threads for one player
 
     thread Loop( player );
 }
@@ -66,10 +85,13 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
 
         var dmgType = DamageInfo_GetDamageType(damageInfo);
         printt("DAMAGE TYPE", dmgType);
-        
+
         if ( player.IsTitan() ){
             GiveRandomTitanLoadout( player );
         } else {
+            // NOTE: i know about DamageInfo_GetWeapon, but it just isn't working and i have no idea why
+            //       it just always returns null so i'll stick to this ugly-but-working approach
+
             bool isGranade = dmgType == 32;
             if ( pilotStates[player].offhand == "mp_weapon_thermite_grenade" && dmgType == 96 ) {
                 isGranade = true;
@@ -77,22 +99,30 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
                 isGranade = true;
             }
 
+            bool isMelee = dmgType == 536870912;
+            printt("IS_MELEE", isMelee);
+
             if (isGranade)
                 GiveRandomPilotGrenade( player );
+            else if (isMelee)
+                GiveRandomPilotMelee( player );
             else
                 GiveRandomPilotWeapon( player );
         }
     }
 }
 
+void function PrecacheIfNeeded( string id ) {
+    if ( !WeaponIsPrecached( id ) )
+        PrecacheWeapon( id );
+}
+
 void function PrecacheEverything() {
     //PrecacheModel( $"models/weapons/at_satchel_charge/at_satchel_charge.mdl" );
-    foreach ( string id in pilotWeapons )
-        if (!WeaponIsPrecached(id))
-            PrecacheWeapon(id);
-    foreach ( string id in pilotOrdnances )
-        if (!WeaponIsPrecached(id))
-            PrecacheWeapon(id);
+    foreach ( string id in pilotWeapons )   PrecacheIfNeeded( id );
+    foreach ( string id in pilotOrdnances ) PrecacheIfNeeded( id );
+    foreach ( string id in pilotAbilities ) PrecacheIfNeeded( id );
+    foreach ( string id in pilotMelees )    PrecacheIfNeeded( id );
 }
 
 void function ServerStart() {
