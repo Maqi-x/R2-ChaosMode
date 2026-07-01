@@ -138,9 +138,9 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
                 GiveRandomTitanLoadout( player );
             } else {
                 switch (RandomInt(3)) {
-                case 0: GiveRandomTitanOffensive( player );
-                case 1: GiveRandomTitanDefensive( player );
-                case 2: GiveRandomTitanTactical ( player );
+                case 0: GiveRandomTitanOffensive( player ); break;
+                case 1: GiveRandomTitanDefensive( player ); break;
+                case 2: GiveRandomTitanTactical ( player ); break;
                 }
             }
         } else {
