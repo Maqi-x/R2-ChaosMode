@@ -75,6 +75,7 @@ void function UpdatePilot( entity player ) {
 }
 
 void function UpdateTitan( entity BT ) {
+    if ( !IsValid( BT ) || ! BT.IsEntAlive() ) return;
     if (!(BT in titanStates)) {
         titanStates[BT] <- RandTitanLoadout();
     }
@@ -104,6 +105,8 @@ void function UpdateTitan( entity BT ) {
         EnsureOffhand( BT, titanStates[BT].defensive, TITAN_DEFENSIVE );
         EnsureOffhand( BT, titanStates[BT].tactical,  TITAN_TACTICAL  );
     }
+
+    BT.SetMoveSpeedScale(BASE_MOVE_SPEED_SCALE);
     SetBTLoadoutsUnlockedBitfield( 0 );
 }
 
@@ -177,6 +180,7 @@ void function PrecacheEverything() {
     foreach ( string id in pilotWeapons )    PrecacheIfNeeded( id );
     foreach ( string id in pilotOrdnances )  PrecacheIfNeeded( id );
     foreach ( string id in pilotAbilities )  PrecacheIfNeeded( id );
+    foreach ( string id in pilotMelees )     PrecacheIfNeeded( id );
     foreach ( string id in titanWeapons )    PrecacheIfNeeded( id );
     foreach ( string id in titanOffensives ) PrecacheIfNeeded( id );
     foreach ( string id in titanDefensives ) PrecacheIfNeeded( id );
