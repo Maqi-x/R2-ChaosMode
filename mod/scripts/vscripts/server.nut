@@ -1,5 +1,7 @@
 global function ServerStart
 
+const float BASE_MOVE_SPEED_SCALE = 1.4;
+
 void function EnsureWeapon( entity ent, string expected ) {
     array<entity> mainWpns = ent.GetMainWeapons();
     if ( mainWpns.len() != 1 || mainWpns[0].GetWeaponClassName() != expected ) {
@@ -16,12 +18,29 @@ void function EnsureWeapon( entity ent, string expected ) {
     }
 }
 
-void function UpdatePilotAbility( entity player ) {
-    entity actualAbility = player.GetOffhandWeapon(PILOT_ABILITY);
-    if ( !IsValid( actualAbility ) || actualAbility.GetWeaponClassName() != pilotStates[player].ability) {
-        player.TakeOffhandWeapon(PILOT_ABILITY);
-        player.GiveOffhandWeapon( pilotStates[player].ability, PILOT_ABILITY, [] );
+void function EnsureOffhand( entity ent, string expected, int slot ) {
+    entity offhand = ent.GetOffhandWeapon( slot )
+    if ( !IsValid( offhand ) || offhand.GetWeaponClassName() != expected ) {
+        ent.TakeOffhandWeapon( slot )
+        ent.GiveOffhandWeapon( expected, slot, [] )
     }
+}
+
+void function UpdatePilotSprint( entity player ) {
+    bool isSprinting = player.IsSprinting();
+    bool wasSprinting = pilotStates[player].isSprinting;
+
+    if (isSprinting && !wasSprinting) {
+        player.SetMoveSpeedScale(RandomFloatRange(BASE_MOVE_SPEED_SCALE-0.2, BASE_MOVE_SPEED_SCALE+0.8));
+    } else if (wasSprinting && !isSprinting) {
+        player.SetMoveSpeedScale(BASE_MOVE_SPEED_SCALE);
+    }
+
+    pilotStates[player].isSprinting = isSprinting;
+}
+
+void function UpdatePilotAbility( entity player ) {
+    EnsureOffhand( player, pilotStates[player].ability, PILOT_ABILITY );
 
     bool isActive = !player.GetOffhandWeapon(PILOT_ABILITY).IsReadyToFire();
     bool wasActive = pilotStates[player].abilityActive;
@@ -52,13 +71,40 @@ void function UpdatePilot( entity player ) {
     wpn.SetWeaponPrimaryAmmoCount(wpn.GetWeaponPrimaryClipCountMax());
 
     UpdatePilotAbility( player );
+    UpdatePilotSprint( player );
 }
 
 void function UpdateTitan( entity BT ) {
     if (!(BT in titanStates)) {
         titanStates[BT] <- RandTitanLoadout();
     }
-    EnsureWeapon( BT, titanStates[BT].primary );
+
+    entity soul = BT.GetTitanSoul();
+
+    float currCoreMeter = soul.GetNextCoreChargeAvailable();
+    float prevCoreMeter = titanStates[BT].coreMeter;
+
+    bool coreActivated = currCoreMeter == 0 && prevCoreMeter != 0;
+    if (coreActivated) {
+        titanStates[BT].coreActive = true;
+        titanStates[BT].coreExpireTime = soul.GetCoreChargeExpireTime();
+    } else if (Time() >= titanStates[BT].coreExpireTime) {
+        titanStates[BT].coreActive = false;
+        titanStates[BT].coreExpireTime = 0;
+    }
+
+    titanStates[BT].coreMeter = currCoreMeter;
+
+    printt("CORE ACTIVE?", titanStates[BT].coreActive);
+
+    // changing weapons when core is active causes many weird bugs
+    if (!titanStates[BT].coreActive) {
+        EnsureWeapon( BT, titanStates[BT].primary );
+        EnsureOffhand( BT, titanStates[BT].offensive, TITAN_OFFENSIVE );
+        EnsureOffhand( BT, titanStates[BT].defensive, TITAN_DEFENSIVE );
+        EnsureOffhand( BT, titanStates[BT].tactical,  TITAN_TACTICAL  );
+    }
+    SetBTLoadoutsUnlockedBitfield( 0 );
 }
 
 void function Loop( entity player ) {
@@ -87,7 +133,16 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
         printt("DAMAGE TYPE", dmgType);
 
         if ( player.IsTitan() ){
-            GiveRandomTitanLoadout( player );
+            if ( titanStates[player].coreActive ) return;
+            if ( victim.IsTitan() ) {
+                GiveRandomTitanLoadout( player );
+            } else {
+                switch (RandomInt(3)) {
+                case 0: GiveRandomTitanOffensive( player );
+                case 1: GiveRandomTitanDefensive( player );
+                case 2: GiveRandomTitanTactical ( player );
+                }
+            }
         } else {
             // NOTE: i know about DamageInfo_GetWeapon, but it just isn't working and i have no idea why
             //       it just always returns null so i'll stick to this ugly-but-working approach
@@ -119,10 +174,13 @@ void function PrecacheIfNeeded( string id ) {
 
 void function PrecacheEverything() {
     //PrecacheModel( $"models/weapons/at_satchel_charge/at_satchel_charge.mdl" );
-    foreach ( string id in pilotWeapons )   PrecacheIfNeeded( id );
-    foreach ( string id in pilotOrdnances ) PrecacheIfNeeded( id );
-    foreach ( string id in pilotAbilities ) PrecacheIfNeeded( id );
-    foreach ( string id in pilotMelees )    PrecacheIfNeeded( id );
+    foreach ( string id in pilotWeapons )    PrecacheIfNeeded( id );
+    foreach ( string id in pilotOrdnances )  PrecacheIfNeeded( id );
+    foreach ( string id in pilotAbilities )  PrecacheIfNeeded( id );
+    foreach ( string id in titanWeapons )    PrecacheIfNeeded( id );
+    foreach ( string id in titanOffensives ) PrecacheIfNeeded( id );
+    foreach ( string id in titanDefensives ) PrecacheIfNeeded( id );
+    foreach ( string id in titanTacticals )  PrecacheIfNeeded( id );
 }
 
 void function ServerStart() {

@@ -5,12 +5,20 @@ PilotState function RandPilotLoadout() {
     loadout.primary = pilotWeapons[ RandomInt( pilotWeapons.len() ) ];
     loadout.offhand = pilotOrdnances[ RandomInt( pilotOrdnances.len() ) ];
     loadout.ability = pilotAbilities[ RandomInt( pilotAbilities.len() ) ];
+    loadout.abilityActive = false;
+    loadout.isSprinting = false;
     return loadout;
 }
 
 TitanState function RandTitanLoadout() {
     TitanState loadout;
     loadout.primary = titanWeapons[ RandomInt( titanWeapons.len() ) ];
+    loadout.offensive    = titanOffensives[ RandomInt( titanOffensives.len() ) ];
+    loadout.defensive    = titanDefensives[ RandomInt( titanDefensives.len() ) ];
+    loadout.tactical     = titanTacticals[ RandomInt( titanTacticals.len() ) ];
+    loadout.coreMeter = 0.0;
+    loadout.coreActive = false;
+    loadout.coreExpireTime = 0.0;
     return loadout;
 }
 
@@ -72,8 +80,14 @@ void function GiveRandomPilotMelee( entity player ) {
     player.GiveOffhandWeapon( chosenMelee, OFFHAND_MELEE, [] );
 }
 
-// giving only the primary weapon in the campaign actually sets the whole loadout
 void function GiveRandomTitanLoadout( entity titan ) {
+    GiveRandomTitanWeapon   ( titan );
+    GiveRandomTitanOffensive( titan );
+    GiveRandomTitanDefensive( titan );
+    GiveRandomTitanTactical ( titan );
+}
+
+void function GiveRandomTitanWeapon( entity titan ) {
     if ( !IsValid( titan ) || !titan.IsTitan() ) return;
 
     foreach ( entity weapon in titan.GetMainWeapons() )
@@ -83,4 +97,31 @@ void function GiveRandomTitanLoadout( entity titan ) {
     titanStates[titan].primary = chosenWeapon;
     titan.GiveWeapon( titanStates[titan].primary );
     titan.SetActiveWeaponByName( titanStates[titan].primary );
+}
+
+void function GiveRandomTitanOffhand( entity titan, int slot, array<string> weaponList, string curr ) {
+    if ( !IsValid( titan ) || !titan.IsTitan() ) return;
+
+    entity offWeapon = titan.GetOffhandWeapon( slot );
+    if ( IsValid( offWeapon ) )
+        titan.TakeWeaponNow( offWeapon.GetWeaponClassName() );
+
+    string chosen = GetRandomDistinctItem( weaponList, curr );
+    switch ( slot ) {
+    case TITAN_OFFENSIVE: titanStates[titan].offensive = chosen; break;
+    case TITAN_DEFENSIVE: titanStates[titan].defensive = chosen; break;
+    case TITAN_TACTICAL:  titanStates[titan].tactical = chosen;  break;
+    }
+
+    titan.GiveOffhandWeapon( chosen, slot, [] );
+}
+
+void function GiveRandomTitanOffensive( entity titan ) {
+    GiveRandomTitanOffhand( titan, TITAN_OFFENSIVE, titanOffensives, titanStates[titan].offensive );
+}
+void function GiveRandomTitanDefensive( entity titan ) {
+    GiveRandomTitanOffhand( titan, TITAN_DEFENSIVE, titanDefensives, titanStates[titan].defensive );
+}
+void function GiveRandomTitanTactical( entity titan ) {
+    GiveRandomTitanOffhand( titan, TITAN_TACTICAL, titanTacticals, titanStates[titan].tactical );
 }

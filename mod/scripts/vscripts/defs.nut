@@ -4,9 +4,16 @@ global struct PilotState {
     string melee
     string ability
     bool abilityActive
+    bool isSprinting
 }
 global struct TitanState {
     string primary
+    string offensive
+    string defensive
+    string tactical
+    float coreMeter
+    bool  coreActive
+    float coreExpireTime
     // TODO: offensive, defensive and tactical abilities
 }
 
@@ -94,4 +101,38 @@ global array<string> titanWeapons = [
     "mp_titanweapon_particle_accelerator",
     "mp_titanweapon_leadwall",
     "mp_titanweapon_predator_cannon",
+];
+
+global array<string> titanOffensives = [
+    "mp_titanweapon_laser_lite",
+    "mp_titanweapon_flame_wall",
+    "mp_titanweapon_shoulder_rockets",
+    "mp_titanweapon_dumbfire_rockets",
+    "mp_titanweapon_arc_wave",
+    "mp_titanweapon_salvo_rockets"
+
+    // crashes the game if current weapon isn't the predator cannon
+    //"mp_titanability_power_shot",
+    // useless if current loadout isnt tone
+    //"mp_titanweapon_tracker_rockets",
+];
+
+global array<string> titanDefensives = [
+    "mp_titanweapon_vortex_shield",
+    "mp_titanweapon_heat_shield",
+    "mp_titanability_tether_trap",
+    "mp_titanability_basic_block",
+    "mp_titanability_particle_wall",
+    //"mp_titanability_gun_shield",
+    "mp_titanweapon_stun_laser"
+];
+
+global array<string> titanTacticals = [
+    "mp_titanability_laser_trip",
+    "mp_titanability_slow_trap",
+    "mp_titanability_hover",
+    "mp_titanability_phase_dash",
+    //"mp_titanability_ammo_swap",
+    //"mp_titanability_rearm",
+    "mp_titanability_electric_smoke",
 ];
