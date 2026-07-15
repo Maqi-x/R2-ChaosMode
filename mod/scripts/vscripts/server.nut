@@ -40,6 +40,10 @@ void function UpdatePilotSprint( entity player ) {
 }
 
 void function UpdatePilotAbility( entity player ) {
+    if ( GetMapName() == "sp_crashsite" )
+        if (!IsValid( player.GetOffhandWeapon(PILOT_ABILITY) ))
+            return;
+
     EnsureOffhand( player, pilotStates[player].ability, PILOT_ABILITY );
 
     bool isActive = !player.GetOffhandWeapon(PILOT_ABILITY).IsReadyToFire();
@@ -96,10 +100,10 @@ void function UpdateTitan( entity BT ) {
 
     titanStates[BT].coreMeter = currCoreMeter;
 
-    printt("CORE ACTIVE?", titanStates[BT].coreActive);
+    //printt("CORE ACTIVE?", titanStates[BT].coreActive);
 
     // changing weapons when core is active causes many weird bugs
-    if (!titanStates[BT].coreActive) {
+    if (!titanStates[BT].coreActive && GetMapName() != "sp_crashsite") {
         EnsureWeapon( BT, titanStates[BT].primary );
         EnsureOffhand( BT, titanStates[BT].offensive, TITAN_OFFENSIVE );
         EnsureOffhand( BT, titanStates[BT].defensive, TITAN_DEFENSIVE );
@@ -137,6 +141,7 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
 
         if ( player.IsTitan() ){
             if ( titanStates[player].coreActive ) return;
+            if ( GetMapName() == "sp_crashsite" ) return;
             if ( victim.IsTitan() ) {
                 GiveRandomTitanLoadout( player );
             } else {
@@ -150,7 +155,7 @@ void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
             // NOTE: i know about DamageInfo_GetWeapon, but it just isn't working and i have no idea why
             //       it just always returns null so i'll stick to this ugly-but-working approach
 
-            bool isGranade = dmgType == 32;
+            bool isGranade = (dmgType == 32) && pilotStates[player].primary != "mp_weapon_softball";
             if ( pilotStates[player].offhand == "mp_weapon_thermite_grenade" && dmgType == 96 ) {
                 isGranade = true;
             } else if ( pilotStates[player].offhand == "mp_weapon_grenade_sonar" && dmgType == 0 ) {
