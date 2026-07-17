@@ -120,6 +120,10 @@ void function GiveRandomTitanOffensive( entity titan ) {
     GiveRandomTitanOffhand( titan, TITAN_OFFENSIVE, titanOffensives, titanStates[titan].offensive );
 }
 void function GiveRandomTitanDefensive( entity titan ) {
+    entity current = titan.GetOffhandWeapon( TITAN_DEFENSIVE );
+    if ( IsValid( current ) && current.GetWeaponClassName() == "mp_titanability_timeshift" )
+        return;
+
     GiveRandomTitanOffhand( titan, TITAN_DEFENSIVE, titanDefensives, titanStates[titan].defensive );
 }
 void function GiveRandomTitanTactical( entity titan ) {

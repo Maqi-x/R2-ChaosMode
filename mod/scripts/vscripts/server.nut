@@ -44,9 +44,14 @@ void function UpdatePilotAbility( entity player ) {
         if (!IsValid( player.GetOffhandWeapon(PILOT_ABILITY) ))
             return;
 
+    entity ability = player.GetOffhandWeapon(PILOT_ABILITY);
+
+    if ( IsValid( ability ) && ability.GetWeaponClassName() == "mp_ability_timeshift" )
+        return;
+
     EnsureOffhand( player, pilotStates[player].ability, PILOT_ABILITY );
 
-    bool isActive = !player.GetOffhandWeapon(PILOT_ABILITY).IsReadyToFire();
+    bool isActive = !ability.IsReadyToFire();
     bool wasActive = pilotStates[player].abilityActive;
 
     if (wasActive && !isActive) {
@@ -106,8 +111,11 @@ void function UpdateTitan( entity BT ) {
     if (!titanStates[BT].coreActive && GetMapName() != "sp_crashsite") {
         EnsureWeapon( BT, titanStates[BT].primary );
         EnsureOffhand( BT, titanStates[BT].offensive, TITAN_OFFENSIVE );
-        EnsureOffhand( BT, titanStates[BT].defensive, TITAN_DEFENSIVE );
         EnsureOffhand( BT, titanStates[BT].tactical,  TITAN_TACTICAL  );
+
+        entity defensive = BT.GetOffhandWeapon( TITAN_DEFENSIVE );
+        if ( !IsValid( defensive ) || defensive.GetWeaponClassName() != "mp_titanability_timeshift" )
+            EnsureOffhand( BT, titanStates[BT].defensive, TITAN_DEFENSIVE );
     }
 
     BT.SetMoveSpeedScale(BASE_MOVE_SPEED_SCALE);
