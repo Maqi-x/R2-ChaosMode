@@ -3,6 +3,9 @@ global function ServerStart
 const float BASE_MOVE_SPEED_SCALE = 1.4;
 
 void function EnsureWeapon( entity ent, string expected ) {
+    entity active = ent.GetActiveWeapon();
+    if ( IsValid( active ) && active.GetWeaponClassName() == "sp_weapon_arc_tool" ) return;
+
     array<entity> mainWpns = ent.GetMainWeapons();
     if ( mainWpns.len() != 1 || mainWpns[0].GetWeaponClassName() != expected ) {
         bool alreadyHave = false;
@@ -11,9 +14,23 @@ void function EnsureWeapon( entity ent, string expected ) {
                 alreadyHave = true;
                 continue;
             }
-            ent.TakeWeaponNow( weapon.GetWeaponClassName() )
+
+            if ( weapon.GetWeaponClassName() != "sp_weapon_arc_tool" )
+                ent.TakeWeaponNow( weapon.GetWeaponClassName() )
         }
+
         if ( !alreadyHave ) ent.GiveWeapon( expected );
+
+        active = ent.GetActiveWeapon();
+
+        if ( IsValid( active ) ) {
+            if ( active.GetWeaponClassName() == expected ) return;
+
+            if ( pilotOrdnances.find(active.GetWeaponClassName()) ) return;
+            if ( pilotOrdnances.find(active.GetWeaponClassName()) ) return;
+            if ( pilotOrdnances.find(active.GetWeaponClassName()) ) return;
+
+        }
         ent.SetActiveWeaponByName( expected );
     }
 }
@@ -50,6 +67,8 @@ void function UpdatePilotAbility( entity player ) {
         return;
 
     EnsureOffhand( player, pilotStates[player].ability, PILOT_ABILITY );
+
+    if ( !IsValid( ability ) ) return;
 
     bool isActive = !ability.IsReadyToFire();
     bool wasActive = pilotStates[player].abilityActive;

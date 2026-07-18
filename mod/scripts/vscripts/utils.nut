@@ -38,12 +38,17 @@ void function GiveRandomPilotWeapon( entity player ) {
     //print( "GiveRandomWeapon() called" );
 
     foreach ( entity weapon in player.GetMainWeapons() )
-        player.TakeWeaponNow( weapon.GetWeaponClassName() )
+        if ( weapon.GetWeaponClassName() != "sp_weapon_arc_tool" )
+            player.TakeWeaponNow( weapon.GetWeaponClassName() )
 
     string chosenWeapon = GetRandomDistinctItem( pilotWeapons, pilotStates[player].primary );
     pilotStates[player].primary = chosenWeapon;
+
     player.GiveWeapon( pilotStates[player].primary );
-    player.SetActiveWeaponByName( pilotStates[player].primary );
+
+    entity active = player.GetActiveWeapon();
+    if ( !IsValid( active ) || active.GetWeaponClassName() != "sp_weapon_arc_tool" )
+        player.SetActiveWeaponByName( pilotStates[player].primary );
 }
 
 void function GiveRandomPilotGrenade( entity player ) {
