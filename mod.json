@@ -1,34 +1,39 @@
 {
-   "Name": "Maqix.ChaosMode",
-   "Description": "Woo yeah wooo!",
-   "Version": "0.2.0",
+  "Name": "Maqix.ChaosMode",
+  "Description": "Woo yeah wooo!",
+  "Version": "0.2.0",
 
-   "LoadPriority": 0,
-   "ConVars": [],
-   "ConCommands": [],
-   "Scripts": [
-      {
-         "Path": "defs.nut",
-         "RunOn": "SERVER || CLIENT"
-      },
-      {
-         "Path": "utils.nut",
-         "RunOn":"SERVER"
-      },
-      {
-         "Path": "server.nut",
-         "RunOn": "SERVER",
-         "ServerCallback": {
-            "Before": "ServerStart"
-         }
-      },
-      {
-         "Path": "client.nut",
-         "RunOn": "CLIENT",
-         "ServerCallback": {
-            "Before": "ClientStart"
-         }
+  "LoadPriority": 0,
+  "ConVars": [
+    {
+      "Name": "chaos_mode_active",
+      "DefaultValue": "1"
+    }
+  ],
+  "ConCommands": [],
+  "Scripts": [
+    {
+      "Path": "defs.nut",
+      "RunOn": "SERVER || CLIENT"
+    },
+    {
+      "Path": "utils.nut",
+      "RunOn": "SERVER"
+    },
+    {
+      "Path": "server.nut",
+      "RunOn": "SERVER",
+      "ServerCallback": {
+         "Before": "ServerStart"
       }
-   ],
-   "Localisation": []
+    },
+    {
+      "Path": "client.nut",
+      "RunOn": "CLIENT",
+      "ServerCallback": {
+        "Before": "ClientStart"
+      }
+    }
+  ],
+  "Localisation": []
 }

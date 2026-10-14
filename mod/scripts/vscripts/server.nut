@@ -114,7 +114,7 @@ void function UpdateTitan( entity BT ) {
     float prevCoreMeter = titanStates[BT].coreMeter;
 
     bool coreActivated = currCoreMeter == 0 && prevCoreMeter != 0;
-    if (coreActivated) {
+    if ( coreActivated ) {
         titanStates[BT].coreActive = true;
         titanStates[BT].coreExpireTime = soul.GetCoreChargeExpireTime();
     } else if (Time() >= titanStates[BT].coreExpireTime) {
@@ -127,7 +127,7 @@ void function UpdateTitan( entity BT ) {
     //printt("CORE ACTIVE?", titanStates[BT].coreActive);
 
     // changing weapons when core is active causes many weird bugs
-    if (!titanStates[BT].coreActive && GetMapName() != "sp_crashsite") {
+    if ( !titanStates[BT].coreActive && GetMapName() != "sp_crashsite" ) {
         EnsureWeapon( BT, titanStates[BT].primary );
         EnsureOffhand( BT, titanStates[BT].offensive, TITAN_OFFENSIVE );
         EnsureOffhand( BT, titanStates[BT].tactical,  TITAN_TACTICAL  );
@@ -143,6 +143,11 @@ void function UpdateTitan( entity BT ) {
 
 void function Loop( entity player ) {
     while ( true ) {
+        if ( !IsActive() ) {
+            wait 1.0;
+            continue;
+        }
+
         if ( player.IsTitan() ) {
             UpdateTitan( player );
         } else {
@@ -160,7 +165,7 @@ void function InitLoop( entity player ) {
 }
 
 void function OnNPCKilled( entity victim, entity attacker, var damageInfo ) {
-    if ( attacker.IsPlayer() ) {
+    if ( IsActive() && attacker.IsPlayer() ) {
         entity player = attacker; // just for clarity
 
         var dmgType = DamageInfo_GetDamageType(damageInfo);

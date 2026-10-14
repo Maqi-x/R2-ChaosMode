@@ -1,4 +1,5 @@
 global function SyncMods
+global function IsActive
 
 global struct PilotState {
     string primary // one of pilotWeapons
@@ -163,4 +164,8 @@ void function SyncMods() {
             "mp_weapon_dragon_lmg", "mp_weapon_peacekeeper", "mp_weapon_throwingknife",
         ]);
     }
+}
+
+bool function IsActive() {
+    return GetConVarBool("chaos_mode_active");
 }
