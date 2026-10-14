@@ -208,6 +208,8 @@ void function PrecacheIfNeeded( string id ) {
 }
 
 void function PrecacheEverything() {
+    SyncMods();
+
     //PrecacheModel( $"models/weapons/at_satchel_charge/at_satchel_charge.mdl" );
     foreach ( string id in pilotWeapons )    PrecacheIfNeeded( id );
     foreach ( string id in pilotOrdnances )  PrecacheIfNeeded( id );

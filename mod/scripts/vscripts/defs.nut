@@ -1,3 +1,5 @@
+global function SyncMods
+
 global struct PilotState {
     string primary // one of pilotWeapons
     string offhand // one of pilotOrdnances
@@ -143,3 +145,22 @@ global array<string> titanTacticals = [
     //"mp_titanability_rearm",
     "mp_titanability_electric_smoke",
 ];
+
+bool function HasEnabledMod( array<ModInfo> mods, string name ) {
+    foreach ( ModInfo mod in mods )
+        if ( mod.name == name )
+            return mod.enabled;
+
+    return false;
+}
+
+void function SyncMods() {
+    array<ModInfo> mods = NSGetModsInformation();
+
+    if ( HasEnabledMod( mods, "Apex Weapons Pack" ) ) {
+        pilotWeapons.extend([
+            "mp_weapon_3030", "mp_weapon_nemesis", "mp_weapon_prowler_smg",
+            "mp_weapon_dragon_lmg", "mp_weapon_peacekeeper", "mp_weapon_throwingknife",
+        ]);
+    }
+}
