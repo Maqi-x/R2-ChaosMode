@@ -29,6 +29,13 @@ global const int PILOT_ORDNANCE = 0;
 global const int PILOT_ABILITY  = 1;
 global const int PILOT_MELEE    = 5;
 
+global const array<int> TITAN_OFFHAND_SLOTS = [
+    TITAN_OFFENSIVE, TITAN_DEFENSIVE, TITAN_TACTICAL,
+];
+global const array<int> PILOT_OFFHAND_SLOTS = [
+    PILOT_ORDNANCE, PILOT_ABILITY, PILOT_MELEE,
+];
+
 global array<string> pilotWeapons = [
     // ar
     "mp_weapon_rspn101",

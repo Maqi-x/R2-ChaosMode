@@ -22,6 +22,41 @@ TitanState function RandTitanLoadout() {
     return loadout;
 }
 
+bool function IsSmartAmmoWeapon( string weapon ) {
+    // maybe there is some more accurate way to check it but this seems to work
+    return weapon == "mp_titanweapon_predator_cannon"
+        || weapon == "mp_titanweapon_shoulder_rockets";
+}
+
+array<string> function GetAllTitanWeapons( entity titan ) {
+    array<string> result;
+
+    foreach ( entity weapon in titan.GetMainWeapons() )
+        if ( IsValid( weapon ) )
+            result.push(weapon.GetWeaponClassName());
+
+    foreach ( int slot in TITAN_OFFHAND_SLOTS ) {
+        entity weapon = titan.GetOffhandWeapon( slot );
+        if ( IsValid( weapon ) ) result.push( weapon.GetWeaponClassName() );
+    }
+
+    entity melee = titan.GetMeleeWeapon();
+    if ( IsValid( melee ) )
+        result.push( melee.GetWeaponClassName() );
+
+    return result;
+}
+
+bool function HasAnySmartAmmoWeapons( entity titan ) {
+    array<string> weapons = GetAllTitanWeapons( titan );
+
+    foreach ( string weapon in weapons )
+        if ( IsSmartAmmoWeapon( weapon ) )
+            return true;
+
+    return false;
+}
+
 string function GetRandomDistinctItem( array<string> pool, string currentItem ) {
     if ( pool.len() <= 1 ) return pool.getrandom();
 
@@ -29,6 +64,19 @@ string function GetRandomDistinctItem( array<string> pool, string currentItem ) 
     do {
         chosen = pool[ RandomInt( pool.len() ) ];
     } while ( chosen == currentItem );
+
+    return chosen;
+}
+
+// when titan ai has two smart ammo weapons at the same time the game crashes
+string function GetRandomTitanWeapon_SmartAmmoAware( entity titan, array<string> pool, string currentItem ) {
+    if ( ! HasAnySmartAmmoWeapons( titan ) )
+        return GetRandomDistinctItem( pool, currentItem );
+
+    string chosen;
+    do {
+        chosen = GetRandomDistinctItem( pool, currentItem );
+    } while ( IsSmartAmmoWeapon( chosen ) );
 
     return chosen;
 }
@@ -98,7 +146,7 @@ void function GiveRandomTitanWeapon( entity titan ) {
     foreach ( entity weapon in titan.GetMainWeapons() )
         titan.TakeWeaponNow( weapon.GetWeaponClassName() )
 
-    string chosenWeapon = GetRandomDistinctItem( titanWeapons, titanStates[titan].primary );
+    string chosenWeapon = GetRandomTitanWeapon_SmartAmmoAware( titan, titanWeapons, titanStates[titan].primary );
     titanStates[titan].primary = chosenWeapon;
     titan.GiveWeapon( titanStates[titan].primary );
     titan.SetActiveWeaponByName( titanStates[titan].primary );
@@ -111,7 +159,7 @@ void function GiveRandomTitanOffhand( entity titan, int slot, array<string> weap
     if ( IsValid( offWeapon ) )
         titan.TakeWeaponNow( offWeapon.GetWeaponClassName() );
 
-    string chosen = GetRandomDistinctItem( weaponList, curr );
+    string chosen = GetRandomTitanWeapon_SmartAmmoAware( titan, weaponList, curr );
     switch ( slot ) {
     case TITAN_OFFENSIVE: titanStates[titan].offensive = chosen; break;
     case TITAN_DEFENSIVE: titanStates[titan].defensive = chosen; break;
