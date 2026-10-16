@@ -39,6 +39,66 @@ global const array<int> PILOT_OFFHAND_SLOTS = [
     PILOT_ORDNANCE, PILOT_ABILITY, PILOT_MELEE,
 ];
 
+global table< string, array<string> > weaponMods = {
+    // titan weapons
+    mp_titanweapon_xo16_shorty = [
+        "accelerator", "electric_rounds", "fast_reload",
+        "extended_ammo", "burst", "fire_rate_max_zoom",
+    ],
+    mp_titanweapon_sticky_40mm = [
+        "gunship_gunner", "splasher_rounds", "fast_reload",
+        "extended_ammo", "mortar_shots", "burn_mod_titan_40mm",
+    ],
+    mp_titanweapon_leadwall = [
+        "instaload", "burn_mod_titan_leadwall",
+    ],
+    mp_titanweapon_particle_accelerator = [
+        "proto_particle_accelerator", "proto_particle_accelerator",
+        "burn_mod_titan_particle_accelerator",
+    ],
+    mp_titanweapon_predator_cannon = [
+        "LongRangeAmmo", "CloseRangePowerShot", "LongRangePowerShot",
+    ],
+    mp_titanweapon_rocketeer_rocketstream = [
+        "rocketstream_fast", "RocketCore_RocketStream",
+        "burn_mod_titan_rocket_launcher",
+    ],
+    mp_titanweapon_sniper = [
+        "fast_reload", "extended_ammo", "power_shot",
+        "quick_short", "instant_shot", "burn_mod_titan_sniper",
+    ],
+
+    // pilot weapons
+    mp_weapon_g2      = [ "hcog" ],
+    mp_weapon_hemlock = [ "hcog" ],
+
+    mp_weapon_vinson  = [ "hcog", "redline_sight", "threat_scope" ],
+    mp_weapon_rspn101 = [ "hcog", "redline_sight", "threat_scope" ],
+
+    mp_weapon_r97   = [ "holosight", "redline_sight", "threat_scope" ],
+    mp_weapon_lstar = [ "holosight", "redline_sight", "threat_scope" ],
+    mp_weapon_lmg   = [ "holosight", "redline_sight", "threat_scope", "aog" ],
+    mp_weapon_car   = [ "holosight", "redline_sight", "threat_scope" ],
+
+    mp_weapon_epg = [
+        "jump_kit", "pro_screen", "extended_ammo",
+        "delayed_shot", "rocket_arena", "burn_mod_epg",
+    ],
+    mp_weapon_softball = [
+        "ar_trajectory", "extended_ammo",
+        "pro_screen", "jump_kit",
+    ],
+    mp_weapon_autopistol = [
+        "temp_sight", "pas_fast_reload", "silencer",
+        "burn_mod_autopistol",
+    ],
+    mp_weapon_smr = [
+        "extended_ammo", "delayed_shot", "burn_mod_smr",
+    ]
+
+    // TODO: add mods for more weapons
+};
+
 global array<string> pilotWeapons = [
     // ar
     "mp_weapon_rspn101",
@@ -108,6 +168,7 @@ global array<string> titanWeapons = [
     "mp_titanweapon_sticky_40mm",
     "mp_titanweapon_rocketeer_rocketstream",
     "mp_titanweapon_meteor",
+    "mp_titanweapon_sniper",
     "mp_titanweapon_particle_accelerator",
     "mp_titanweapon_leadwall",
     "mp_titanweapon_predator_cannon",

@@ -57,6 +57,47 @@ bool function HasAnySmartAmmoWeapons( entity titan ) {
     return false;
 }
 
+string function GetRandomModFor( string weapon ) {
+    Assert( weapon in weaponMods );
+
+    array<string> mods = weaponMods[ weapon ];
+    Assert( mods.len() > 0 );
+
+    return mods[ RandomInt( mods.len() ) ];
+}
+
+array<string> function GetRandomModsFor( string weapon ) {
+    // no mods available
+    if ( !( weapon in weaponMods ) )
+        return [];
+    if ( weaponMods[ weapon ].len() == 0 )
+        return [];
+
+    // 30% no mods
+    if ( RandomInt(10) < 3 )
+        return [];
+
+    // 80% (excluding the no mods case) one mod
+    if ( RandomInt(10) < 8 )
+        return [ GetRandomModFor( weapon ) ];
+
+    // only one mod is available
+    if ( weaponMods[ weapon ].len() == 1 )
+        return [ GetRandomModFor( weapon ) ];
+
+    // 20% (excluding the no mods case) two mods
+    return [ GetRandomModFor( weapon ), GetRandomModFor( weapon ) ];
+}
+
+void function SetRandomMods( entity weapon ) {
+    array<string> mods = GetRandomModsFor( weapon.GetWeaponClassName() );
+    //print("Giving mods:");
+    //print("-----------------------------");
+    //foreach ( mod in mods ) printt( "Mod: ", mod );
+    //print("-----------------------------");
+    weapon.SetMods( mods );
+}
+
 string function GetRandomDistinctItem( array<string> pool, string currentItem ) {
     if ( pool.len() <= 1 ) return pool.getrandom();
 
@@ -97,6 +138,10 @@ void function GiveRandomPilotWeapon( entity player ) {
     entity active = player.GetActiveWeapon();
     if ( !IsValid( active ) || active.GetWeaponClassName() != "sp_weapon_arc_tool" )
         player.SetActiveWeaponByName( pilotStates[player].primary );
+
+    active = player.GetActiveWeapon();
+    Assert( active.GetWeaponClassName() == chosen );
+    SetRandomMods( active );
 }
 
 void function GiveRandomPilotGrenade( entity player ) {
@@ -146,10 +191,14 @@ void function GiveRandomTitanWeapon( entity titan ) {
     foreach ( entity weapon in titan.GetMainWeapons() )
         titan.TakeWeaponNow( weapon.GetWeaponClassName() )
 
-    string chosenWeapon = GetRandomTitanWeapon_SmartAmmoAware( titan, titanWeapons, titanStates[titan].primary );
-    titanStates[titan].primary = chosenWeapon;
-    titan.GiveWeapon( titanStates[titan].primary );
-    titan.SetActiveWeaponByName( titanStates[titan].primary );
+    string chosen = GetRandomTitanWeapon_SmartAmmoAware( titan, titanWeapons, titanStates[titan].primary );
+    titanStates[titan].primary = chosen;
+    titan.GiveWeapon( chosen );
+    titan.SetActiveWeaponByName( chosen );
+
+    entity active = titan.GetActiveWeapon();
+    Assert( active.GetWeaponClassName() == chosen );
+    SetRandomMods( active );
 }
 
 void function GiveRandomTitanOffhand( entity titan, int slot, array<string> weaponList, string curr ) {
